@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Site</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table-fixed-header thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8fafc;
+            z-index: 10;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            border-radius: 0.375rem;
+        }
+
+        .bg-success {
+            background-color: #10B981;
+        }
+
+        .bg-danger {
+            background-color: #EF4444;
+        }
+
+        .bg-primary {
+            background-color: #3B82F6;
+        }
+
+        .bg-warning {
+            background-color: #F59E0B;
+            color: #1F2937;
+        }
+
+        /* --- Mobile Responsive Table Styles --- */
+        @media screen and (max-width: 300px) {
+            .table-container {
+                overflow-x: hidden;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #e2e8f0;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+                padding: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            td {
+                border: none !important;
+                position: relative;
+                padding-left: 50% !important;
+                text-align: left !important;
+                font-size: 0.875rem;
+                /* sm:text-sm */
+            }
+
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0.5rem;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: 600;
+                color: #4a5568;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+    <div class="bg-white p-4 md:p-8 rounded-lg shadow-xl">
+        <nav class="bg-gray-800 p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <div>
+                    <a href="#" class="text-white text-lg font-semibold">MSRLS Dashboard</a>
+                </div>
+            </div>
+        </nav>
+        
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center mt-2">MSRLS Dashboard </h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6 items-end">
+            <div class="col-span-full lg:col-span-2">
+                <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Search...</label>
+                <input type="text" id="searchInput" placeholder="Search..."
+                    class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+             <div>
+                <label for="sectorkFilter" class="block text-sm font-medium text-gray-700 mb-1">Sector</label>
+                <select id="sectorkFilter"
+                    class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <option value="">Sector</option>
+                </select>
+            </div>
+            
+            <div class="flex items-end gap-4 col-span-full md:col-span-2 lg:col-span-1 justify-between md:justify-end">
+                <div>
+                    <label for="showEntries" class="block text-sm font-medium text-gray-700 mb-1">Show</label>
+                    <select id="showEntries"
+                        class="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <button id="resetBtn"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+            <div class="text-sm text-gray-600">
+                Last updated: <span id="lastUpdated">Fetching...</span>
+            </div>
+        </div>
+
+        <center>
+            <span class="text-success h1" id="msg"></span>
+            <span class="text-danger h1" id="errormsg"></span>
+        </center>
+
+        <div class="table-container bg-white rounded-lg overflow-hidden shadow-md overflow-x-auto">
+            <table id="meetingTable" class="min-w-full divide-y divide-gray-200 table-fixed-header">
+                <thead class="bg-gray-50">
+                   <tr>
+                        <th class="py-3 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                            SL</th>
+                        <th class="py-3 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                            Sector</th>
+                        <th class="py-3 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                            Description</th>
+                        <th class="py-3 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                            Priority</th>
+                        <th class="py-3 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                            View</th>
+                    </tr>
+                </thead>
+                <tbody id="meetingTableBody" class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="4" class="py-4 px-4 text-center text-gray-500">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center mt-6 text-sm text-gray-700">
+            <div class="mb-2 md:mb-0">
+                Total Entries: <span id="totalEntries">0</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="prevBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Previous
+                </button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextBtn"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwQOrIhC3uRa3wUVCU3m5Yd0-eSuL-Pkm57KrdJuxwKYiokUw_gOkK-obAf3-DwMKPq/exec"
+        let allMeetingData = [];
+
+        let dta = [];
+
+        let filteredData = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+
+        // Get DOM elements
+        const meetingTableBody = document.getElementById('meetingTableBody');
+        const searchInput = document.getElementById('searchInput');
+        
+        // filter 
+        const sectorFilter = document.getElementById('sectorkFilter');
+        
+        const showEntries = document.getElementById('showEntries');
+        const resetBtn = document.getElementById('resetBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const totalEntriesSpan = document.getElementById('totalEntries');
+        const lastUpdatedSpan = document.getElementById('lastUpdated');
+
+        async function fetchData() {
+            try {
+                const apiUrl = WEB_APP_URL;
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}. Response: ${errorText}`);
+                }
+                const rawData = await response.json();
+
+                if (rawData.message && rawData.message.length > 1) {
+                    const headers = rawData.message[0];
+                    dta = rawData.message.slice(1).map(row => {
+                        const rowObject = {};
+                        headers.forEach((header, index) => {
+                            rowObject[header] = row[index];
+                        });
+                        return rowObject;
+                    });
+
+                    allMeetingData = dta;
+                } else {
+                    dta = [];
+                    allMeetingData = [];
+                    console.warn("No data or headers found in the fetched response.");
+                }
+
+                initializeFilters();
+                applyFiltersAndSearch();
+                const now = new Date();
+                lastUpdatedSpan.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                meetingTableBody.innerHTML = '<tr><td colspan="4" class="py-4 px-4 text-center text-red-500">Error loading data. Please try again.</td></tr>';
+                lastUpdatedSpan.textContent = 'Failed to load';
+            }
+        }
+
+        const getUniqueValues = (data, key) => [...new Set(data.map(item => item[key]).filter(Boolean))].sort();
+        
+        // Refined populateSelect function for better default text
+        const populateSelect = (selectElement, values, defaultText = "Select Option") => {
+            selectElement.innerHTML = `<option value="">-- ${defaultText} -- </option>`;
+            values.forEach(value => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                selectElement.appendChild(option);
+            });
+        };
+
+        function initializeFilters() {
+            const allSectors = getUniqueValues(dta, 'Sector');
+            populateSelect(sectorFilter, allSectors, 'All Sectors');
+        }
+
+        function renderTable() {
+            meetingTableBody.innerHTML = '';
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedData = filteredData.slice(startIndex, endIndex);
+            
+            if (paginatedData.length === 0) {
+                const row = meetingTableBody.insertRow();
+                const cell = row.insertCell();
+                // FIX: Corrected colspan to 4 (matches number of <th> columns)
+                cell.colSpan = 4; 
+                cell.textContent = "No records found.";
+                cell.className = "py-4 px-4 text-center text-gray-500";
+                return;
+            }
+            
+            paginatedData.forEach((item, index) => {
+                const row = meetingTableBody.insertRow();
+                row.className = 'hover:bg-gray-50'; // Add hover effect
+
+                const slNo = startIndex + index + 1; // Serial number
+                const sector1 = item["Sector"]; 
+                const Description1 = item["Description"];
+                const priority1=item['Priority'];
+                const link1 = item["link"];
+                
+                row.innerHTML = `
+                    <td class="py-2 px-2 whitespace-nowrap text-sm font-medium text-gray-900 w-8" data-label="SL">${slNo}</td>
+                    <td class="py-2 px-2 text-sm text-gray-700" data-label="Sector">${sector1}</td>
+                    <td class="py-2 px-2 text-sm text-gray-700" data-label="Description">${Description1} </td>
+                    <td class="py-2 px-2 text-sm text-gray-700" data-label="Description"> <span class="badge bg-primary"> ${priority1} </span> </td>
+                    <td class="py-2 px-2 text-sm text-gray-700"> <a href="${link1}" target="_blank" class="badge bg-success"> View</a> </td>`;
+
+            });
+
+            updatePaginationInfo();
+        }
+
+        function applyFiltersAndSearch() {
+
+            let data = [...allMeetingData]; // Start with a fresh copy of all data
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedSector = sectorFilter.value;
+            
+            // Apply search filter
+            if (searchTerm) {
+                data = data.filter(item =>
+                    Object.values(item).some(value =>
+                        String(value).toLowerCase().includes(searchTerm)
+                    )
+                );
+            }
+
+            // Apply Sector filter
+            if (selectedSector) {
+                data = data.filter(item => item["Sector"] === selectedSector);
+            }
+            
+            filteredData = data;
+            currentPage = 1;
+            renderTable();
+        }
+
+        function updatePaginationInfo() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            totalEntriesSpan.textContent = filteredData.length;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        // --- Event Listeners ---
+
+        // Search input
+        searchInput.addEventListener('keyup', applyFiltersAndSearch);
+        
+        // FIX: Added missing event listener for the Sector filter
+        sectorFilter.addEventListener('change', applyFiltersAndSearch);
+
+        // Entries per page selector
+        showEntries.addEventListener('change', (event) => {
+            itemsPerPage = parseInt(event.target.value, 10);
+            applyFiltersAndSearch();
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            sectorFilter.value = '';
+            showEntries.value = '10';
+            itemsPerPage = 10;
+            applyFiltersAndSearch();
+        });
+
+        // Pagination buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
+
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</body>
+
+</html>
