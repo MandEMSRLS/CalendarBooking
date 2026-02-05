@@ -145,7 +145,7 @@
 
 		<script>
 				
-		WEB_APP_URL="https://script.google.com/macros/s/AKfycbyJEQnlLehDgUeroOoA8NFBy32-Hay-pgJwIE1ul1CUvx6sbw0bURtu22e8VCEVcmrC/exec";
+		WEB_APP_URL="https://script.google.com/macros/s/AKfycbybRl3s58j5_lRFVN0Muw6CnvIlvKWcOnzmMKt3D4Zu9T91GnXpRm5aBOsy8PWgYZvf/exec";
 		
 			//institutionTypetext,
 			 $('#MeetingType').change(function() {
@@ -246,11 +246,11 @@
 					}
 					
 					
-					return  0;
-					// const response = await fetch(WEB_APP_URL, {
-					// 	method: 'POST',
-					// 	body: formData
-					// });
+					
+					const response = await fetch(WEB_APP_URL, {
+						method: 'POST',
+						body: formData
+					});
 
 					if (!response.ok) {
 						const errorText = await response.text();
@@ -261,8 +261,9 @@
 					if (result.success) {
 						$('#msg').show();
 						$('#msg').text('Booking Sucessfully..');
-						 window.open('https://www.example.com', '_blank');
-						 //window.location.href = "https://sites.google.com/view/conferencerbooking/success";
+//window.location.href = "https://sites.google.com/view/conferencerbooking/success";
+ window.open('https://sites.google.com/view/conferencerbooking/success', '_blank');
+						//window.location.href = "success.html";
 						resetMyForm();		
 					} else {
 						console.log(`Submission failed: ${result.message}`, 'error');
